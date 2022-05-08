@@ -32,7 +32,12 @@ public class LibraryEventsController {
     @PostMapping("/v1/libraryevent-sync")
     public ResponseEntity<LibraryEvent> postLibraryEventSync(@RequestBody LibraryEvent libraryEvent) throws JsonProcessingException, ExecutionException, InterruptedException, TimeoutException {
         // invoke kafka producer
-        SendResult<Integer, String> sendResult = libraryEventProducer.sendLibraryEventSync(libraryEvent);
+
+        //Produce message using default topic
+        //SendResult<Integer, String> sendResult = libraryEventProducer.sendLibraryEventSync(libraryEvent);
+
+        //Produce message using a topic
+        SendResult<Integer, String> sendResult = libraryEventProducer.sendLibraryEventSyncWithTopic(libraryEvent);
         log.info("Send result is {}", sendResult.toString());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);

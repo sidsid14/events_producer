@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ss.domain.LibraryEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -23,6 +24,8 @@ public class LibraryEventProducer {
 
     @Autowired
     ObjectMapper objectMapper;
+    
+    public String topic = "library-events";
 
     public void sendLibraryEvent(LibraryEvent libraryEvent) throws JsonProcessingException {
         Integer key = libraryEvent.getLibraryEventId();
@@ -70,5 +73,29 @@ public class LibraryEventProducer {
         }
         return sendResult;
     }
+
+    public SendResult<Integer, String> sendLibraryEventSyncWithTopic(LibraryEvent libraryEvent) throws JsonProcessingException, ExecutionException, InterruptedException, TimeoutException {
+        Integer key = libraryEvent.getLibraryEventId();
+        String value = objectMapper.writeValueAsString(libraryEvent);
+
+        ProducerRecord<Integer,String> producerRecord = buildProducerRecord(key, value, topic);
+
+        SendResult<Integer, String> sendResult;
+        try{
+            sendResult = kafkaTemplate.send(producerRecord).get(2, TimeUnit.SECONDS);
+        }catch (ExecutionException | InterruptedException e){
+            log.error("ExecutionException/InterruptedException occurred while sending the message. {}", e.getMessage());
+            throw e;
+        }catch (Exception e){
+            log.error("Exception sending the message and the message is {}", e.getMessage());
+            throw e;
+        }
+        return sendResult;
+    }
+
+    private ProducerRecord<Integer, String> buildProducerRecord(Integer key, String value, String topic) {
+        return new ProducerRecord<>(topic, null, key, value, null);
+    }
+
 
 }
