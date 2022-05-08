@@ -2,6 +2,7 @@ package com.ss.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ss.domain.LibraryEvent;
+import com.ss.domain.LibraryEventType;
 import com.ss.producer.LibraryEventProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +26,14 @@ public class LibraryEventsController {
     @PostMapping("/v1/libraryevent")
     public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody LibraryEvent libraryEvent) throws JsonProcessingException {
         // invoke kafka producer
+        libraryEvent.setLibraryEventType(LibraryEventType.NEW);
         libraryEventProducer.sendLibraryEvent(libraryEvent);
         return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
     }
 
     @PostMapping("/v1/libraryevent-sync")
     public ResponseEntity<LibraryEvent> postLibraryEventSync(@RequestBody LibraryEvent libraryEvent) throws JsonProcessingException, ExecutionException, InterruptedException, TimeoutException {
+        libraryEvent.setLibraryEventType(LibraryEventType.NEW);
         // invoke kafka producer
 
         //Produce message using default topic
