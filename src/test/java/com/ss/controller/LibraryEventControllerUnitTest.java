@@ -34,8 +34,14 @@ public class LibraryEventControllerUnitTest {
     @Test
     void postLibraryEvent() throws Exception {
         //given
-        Book book = Book.builder().bookId(123).bookName("test").bookAuthor("author").build();
-        LibraryEvent libraryEvent = LibraryEvent.builder().libraryEventId(null).book(book).build();
+        Book book = Book.builder()
+                .bookId(123)
+                .bookName("test")
+                .bookAuthor("author").build();
+
+        LibraryEvent libraryEvent = LibraryEvent.builder()
+                .libraryEventId(null)
+                .book(book).build();
 
         String json = objectMapper.writeValueAsString(libraryEvent);
         doNothing().when(libraryEventProducer).sendLibraryEvent(isA(LibraryEvent.class));
