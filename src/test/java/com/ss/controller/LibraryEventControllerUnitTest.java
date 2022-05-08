@@ -5,6 +5,7 @@ import com.ss.controller.LibraryEventsController;
 import com.ss.domain.Book;
 import com.ss.domain.LibraryEvent;
 import com.ss.producer.LibraryEventProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -13,11 +14,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,12 +47,16 @@ public class LibraryEventControllerUnitTest {
         LibraryEvent libraryEvent = LibraryEvent.builder()
                 .libraryEventId(null)
                 .book(book).build();
+        String value = objectMapper.writeValueAsString(libraryEvent);
+
+        ProducerRecord<Integer,String> producerRecord = new ProducerRecord<>("library-events",value);
 
         String json = objectMapper.writeValueAsString(libraryEvent);
-        doNothing().when(libraryEventProducer).sendLibraryEvent(isA(LibraryEvent.class));
+
+        when(libraryEventProducer.sendLibraryEventSyncWithTopic(isA(LibraryEvent.class))).thenReturn(new SendResult<>(producerRecord,null));
 
         //expect
-        mockMvc.perform(post("/v1/libraryevent")
+        mockMvc.perform(post("/v1/libraryevent-sync")
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
@@ -67,12 +74,17 @@ public class LibraryEventControllerUnitTest {
                 .libraryEventId(null)
                 .book(book).build();
 
+        String value = objectMapper.writeValueAsString(libraryEvent);
+
+        ProducerRecord<Integer,String> producerRecord = new ProducerRecord<>("library-events",value);
+
         String json = objectMapper.writeValueAsString(libraryEvent);
-        doNothing().when(libraryEventProducer).sendLibraryEvent(isA(LibraryEvent.class));
+
+        when(libraryEventProducer.sendLibraryEventSyncWithTopic(isA(LibraryEvent.class))).thenReturn(new SendResult<>(producerRecord,null));
 
         //expect
         String expectedErrorMessage = "book.bookAuthor - must not be blank, book.bookId - must not be null, book.bookName - must not be blank";
-        mockMvc.perform(post("/v1/libraryevent")
+        mockMvc.perform(post("/v1/libraryevent-sync")
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
