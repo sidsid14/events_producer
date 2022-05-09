@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -44,6 +45,18 @@ public class LibraryEventsController {
         //Produce message using a topic
         SendResult<Integer, String> sendResult = libraryEventProducer.sendLibraryEventSyncWithTopic(libraryEvent);
         log.info("Send result is {}", sendResult.toString());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
+    }
+
+    @PutMapping("/v1/libraryevent-sync")
+    public ResponseEntity<?> putLibraryEventSync(@RequestBody @Valid LibraryEvent libraryEvent) throws JsonProcessingException, ExecutionException, InterruptedException, TimeoutException {
+        if(libraryEvent.getLibraryEventId() == null){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please pass the LibraryEventId.");
+        }
+        libraryEvent.setLibraryEventType(LibraryEventType.UPDATE);
+        SendResult<Integer, String> sendResult = libraryEventProducer.sendLibraryEventSyncWithTopic(libraryEvent);
+        log.info("Message sent to partition {} and Send result is {}", sendResult.toString(), sendResult.getRecordMetadata().partition());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
     }
