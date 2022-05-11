@@ -19,6 +19,52 @@ The project is built using springboot framework. The project should expose APIs 
 ![App](https://user-images.githubusercontent.com/27942487/167331116-635e404a-202b-46ea-aeca-e5a4ce3d02d1.png)
 ![API ref](https://user-images.githubusercontent.com/27942487/167331174-66da808d-7b8c-4cfd-b0a8-783c8ba6663c.png)
 
+## Environment Variables
+SSL_LOCATION=/Users/kafka/ssl;SSL_PASS=kafka@password
+
+## SSL Configuration
+1. Generate Keystore
+   - keytool -keystore server.keystore.jks -alias localhost -validity 365 -genkey -keyalg RSA -storetype pkcs12
+2. Validate keystore
+   - keytool -list -v -keystore server.keystore.jks
+3. Generate CA
+   - openssl req -new -x509 -keyout ca-key -out ca-cert -days 365 -subj "/CN=local-security-CA"
+4. Certificate Signing Request (CSR)
+   - keytool -keystore server.keystore.jks -alias localhost -certreq -file cert-file
+5. Signing the certificate
+   - openssl x509 -req -CA ca-cert -CAkey ca-key -in cert-file -out cert-signed -days 365 -CAcreateserial -passin pass:password
+6. Add the signed cert in to KeyStore file
+   - keytool -keystore server.keystore.jks -alias CARoot -import -file ca-cert
+   - keytool -keystore server.keystore.jks -alias localhost -import -file cert-signed
+7. Generate the TrustStore
+   - keytool -keystore client.truststore.jks -alias CARoot -import -file ca-cert
+
+## SSL Broker configuration
+1. Create a file client-ssl.properties
+```properties
+     security.protocol=SSL
+     ssl.truststore.location=<LOCATION>/client.truststore.jks
+     ssl.truststore.password=<PASSWORD>
+     ssl.truststore.type=JKS
+     ssl.keystore.type=JKS
+     ssl.keystore.location=<LOCATION>/client.keystore.jks
+     ssl.keystore.password=<PASSWORD>
+     ssl.key.password=<PASSWORD>
+```
+
+2. Broker configuration for server.properties
+```properties
+   listeners=PLAINTEXT://localhost:9092, SSL://localhost:9095
+   auto.create.topics.enable=false
+   ssl.keystore.location=<LOCATION>/server.keystore.jks
+   ssl.keystore.password=<PASSWORD>
+   ssl.key.password=<PASSWORD>
+   ssl.endpoint.identification.algorithm=
+   ssl.truststore.location=<LOCATION>/server.truststore.jks
+   ssl.truststore.password=<PASSWORD>
+   ssl.client.auth=required
+   log.dirs=/tmp/kafka-logs
+```
 
 ## Plugins 
 
