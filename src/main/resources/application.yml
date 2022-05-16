@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: dev
+    active: local
 ---
 spring:
   profiles: local
@@ -11,6 +11,9 @@ spring:
       bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
       key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        retries: 10
+        retry.backoff.ms: 1000
     admin:
       properties:
         bootstrap.servers: localhost:9092,localhost:9093,localhost:9094
@@ -33,7 +36,6 @@ spring:
         security:
           protocol: SSL
         ssl.endpoint.identification.algorithm:
-
 ---
 spring:
   profiles: prod
