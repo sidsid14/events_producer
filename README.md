@@ -100,7 +100,12 @@ SSL_LOCATION=/Users/kafka/ssl;SSL_PASS=kafka@password
 | :-------- | :------- | :------------------------- |
 | `body` | `application/json` | <pre>{<br> "libraryEventId":null,<br> "book":{ <br>&emsp; "bookId":451, <br>&emsp; "bookName":"Kafka Using Spring Boot", <br>&emsp; "bookAuthor":"Sudhanshu" <br>&emsp; } <br> } </pre>|
 
+## References
 
+ - [Kafka/Springboot Config Guide](https://github.com/dilipsundarraj1/kafka-for-developers-using-spring-boot)
+ - [Apache Kafka Documentation](https://kafka.apache.org/documentation/#security_ssl)
+ - [Spring Kafka Documentation](https://docs.spring.io/spring-kafka/reference/html)
+ - [Certificate](https://www.udemy.com/certificate/UC-08909b26-768c-4bf4-a4e0-744443e09903)
 
 
 ## Authors
